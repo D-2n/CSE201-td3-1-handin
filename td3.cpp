@@ -1,4 +1,4 @@
-#include <iostream>
+    #include <iostream>
 #include "td3.hpp"
 #include "support.hpp"
 #include <stdlib.h>
@@ -36,15 +36,11 @@ double* append_to_array(double element,
                         int &max_size) {
   if (current_size==max_size){
       max_size=max_size+5;
-      double* array_1=extend_array(array,current_size,max_size);
-      *(array_1+current_size)=element;
-      current_size+=1;
-      return array_1;
-  }else{
-      *(array+current_size)=element;
-      current_size+=1;
-      return array;
-  };
+      array=extend_array(array,current_size,max_size);
+  }
+  array[current_size]= element;
+  current_size+=1;
+  return array;
 }
 
 double* remove_from_array(double* array,
@@ -108,22 +104,20 @@ bool simulate_projectile(const double magnitude, const double angle,
   }
   return hit_target;
 }
-void sort(double *list, const int list_length) {
-    for(int i=0;i<list_length;i++){
-        for (int j=1;j<list_length;j++){
-            i=4*i;
-            if (list[2*(j-1)]>list[i*2]){
-                j=4*j;
-                for (int p=0;p<4;++p){
-                  int a=list[2*(j-1)+p];
-                  int b=list[2*(j-1)+1+p];
-                  list[2*(j-1)+p]=list[i*2+p];
-                  list[2*(j-1)+1+p]=list[i*2+1+p];
-                  list[i*2+p]=a;
-                  list[i*2+1+p]=b;
-                }
-
-            }
+void sort(double *array, const int list_length) {
+    for (int i=0;i<list_length-4;i+=3){
+        for (int j=i+3;j<list_length;j+=3){
+            if(array[i]>array[j]){
+              double one=array[i];
+              double two=array[i+1];
+              double three=array[i+2];
+              array[i]=array[j];
+              array[i+1]=array[j+1];
+              array[i+2]=array[j+2];
+              array[j]=one;
+              array[j+1]=two;
+              array[j+2]=three;
+        }
         }
     }
   }
@@ -133,15 +127,10 @@ void merge_telemetry(double **telemetries,
                      double* &global_telemetry,
                      int &global_telemetry_current_size,
                      int &global_telemetry_max_size) {
-    global_telemetry_max_size=0;
-    for (int i=0;i<tot_telemetries;++i){
-        global_telemetry_max_size+=telemetries_sizes[i];
+      for (int i=0;i<tot_telemetries;i++){
+          for (int j=0;j<telemetries_sizes[i];j++){
+              global_telemetry=append_to_array(telemetries[i][j],global_telemetry,global_telemetry_current_size,global_telemetry_max_size);
+          }
     }
-    global_telemetry=new double[global_telemetry_max_size];
-    global_telemetry_current_size=0;
-    for (int j=0;j<tot_telemetries;++j){
-        for (int i=0;i<telemetries_sizes[j];++i){
-            global_telemetry = append_to_array(telemetries[j][i],global_telemetry,global_telemetry_current_size,global_telemetry_max_size);
-        }
-    }
+    sort(global_telemetry,global_telemetry_current_size);
 }
